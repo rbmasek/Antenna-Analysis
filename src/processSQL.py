@@ -4,7 +4,6 @@
 import sqlite3
 import datetime
 import matplotlib as mpl
-import matplotlib.pyplot as plt
 import scipy.fftpack as sfft
 import sys
 from time import sleep
@@ -12,23 +11,6 @@ import argparse
 from analyze_event import *
 from frequencyCut import fourierCut # Cutting the frequencies is done in the frequencyCut.py
 
-# Define the constants for the x axis
-X_MIN = -2000
-X_MAX = 100
-
-# Database file
-input_file  = directory + "/databases/Measurement_20180605/WaveDump_20180605_124246.db"
-
-# Define all plot objects
-plot_file = directory + "/analysis/radio.pdf"
-fig1 = plt.figure(figsize = (12, 6))
-plot1 = fig1.add_subplot(3, 1, 1)
-plot2 = fig1.add_subplot(3, 1, 2)
-plot3 = fig1.add_subplot(3, 1, 3)
-
-fig2 = plt.figure(figsize = (12, 10))
-
-plt.subplots_adjust(hspace = 1)
 
 k = 1 / 12.57
 
@@ -231,26 +213,12 @@ def search_events(args):
         adcValuesCh5Cut = sfft.ifft(ch5FourierCut, len(ch5FourierCut))
         '''
 
-        time_cut = np.round(time) # Rounds each value to an int (each value is originally a float)
-        x_min_index = np.where(time_cut == X_MIN)[0][0] # Returns time index of X_MIN
-        x_max_index = np.where(time_cut == X_MAX)[0][0] + 1 # Returns time index of X_MAX
-        time_cut = time_cut[x_min_index : x_max_index] # Cuts the time array down to only what will be analyzed
         cut_list = [adcValuesCh0Cut, adcValuesCh1Cut, adcValuesCh2Cut, adcValuesCh3Cut]#, adcValuesCh4Cut[x_min_index : x_max_index], adcValuesCh5Cut[x_min_index : x_max_index]] #Stores each channel in a list so that the commands can be iterated instead of hard coded.
 
-        channel_envelopes = [] # Stores the channel envelopes. Index corresponds to channel number
-        channel_means = [] # Stores the channel means. Index corresponds to channel number
+        coincidence = False # Reset boolean each iteration
+        coincidence = analyze_channels(row, time, cut_list, args.BIN_RANGE)
 
-        # Analyze each channel separately
-        for channel_number, cut in enumerate(cut_list):
-            event_logger.info("    Channel " + str(channel_number) + ":")
-            channel_means.append(find_channel_mean(cut)) # Finds mean of the channel cut
-            channel_envelopes.append(create_and_plot_envelope(plot3, time_cut, channel_number, cut[x_min_index : x_max_index]))
-
-        sort_channels(cut_list)
-        coincidence = False
-        coincidence = find_signals(row, fig2, time_cut, channel_envelopes, channel_means, args.BIN_RANGE)
         if coincidence == True:
-            
 
             plot1.plot(time, adcValuesCh0, label = "CH0", color = 'blue')
             plot1.plot(time, adcValuesCh1, label = "CH1", color = 'red')
@@ -325,15 +293,15 @@ if __name__  == "__main__":
     try:
         # Define some constants
         parser = argparse.ArgumentParser(description = "Define constants for the minimum event number, the maximum event number, and the bin range.")
-        parser.add_argument("-min", type = int, dest = "SEARCH_MIN", default = 296,
+        parser.add_argument("-min", type = int, dest = "SEARCH_MIN", default = 0,
                     help = "integer value for the minimum event number")
-        parser.add_argument("-max", type = int, dest = "SEARCH_MAX", default = 297,
+        parser.add_argument("-max", type = int, dest = "SEARCH_MAX", default = len(rowEvents),
                     help = "integer value for the maximum event number")
         parser.add_argument("-b", type = int, dest = "BIN_RANGE", default = 20,
                     help = "integer value for the bin range")
 
         args = parser.parse_args()
-        print(args)
+        #print(args)
 
         event_logger.info("------------------------------------------------------------")
         event_logger.info("------------------------------------------------------------")

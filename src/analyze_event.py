@@ -1,6 +1,7 @@
 import numpy as np
 import logging
 import operator
+import matplotlib.pyplot as plt
 from numpy import array, sign, zeros
 from scipy.interpolate import interp1d
 
@@ -8,8 +9,26 @@ from scipy.interpolate import interp1d
 SPEED_OF_LIGHT = 0.299792458 # In meters per nanosecond
 NUMBER_OF_CHANNELS = 4
 
-directory = "/home/user/Desktop/rise/signal_analysis"
+# Define the constants for the x axis
+X_MIN = -2000
+X_MAX = 100
 
+# Define directories
+directory = "/home/reed/Desktop/rise/Antenna-Analysis"
+input_file  = directory + "/databases/Measurement_20180605/WaveDump_20180605_124246.db"
+
+# Define all plot objects
+plot_file = directory + "/analysis/radio.pdf"
+fig1 = plt.figure(figsize = (12, 6))
+plot1 = fig1.add_subplot(3, 1, 1)
+plot2 = fig1.add_subplot(3, 1, 2)
+plot3 = fig1.add_subplot(3, 1, 3)
+
+fig2 = plt.figure(figsize = (12, 10))
+
+plt.subplots_adjust(hspace = 1)
+
+# Define global variables
 time_list = [] # Stores the time of each channel's peak frequency value. The index corresponds to the channel (i.e. time_list[0] is the time for ch0).
 amplitude_list = [] # Stores the peak amplitude of each channel. The index corresponds to the channel.
 event_list = [] # Stores all potential radio events across all channels
@@ -50,7 +69,7 @@ cosmic_ray_logger = setup_logger("cosmic_ray_logger", "possible_cosmic_rays.txt"
 
 #Retrieved from https://stackoverflow.com/questions/34235530/python-how-to-get-high-and-low-envelope-of-a-signal
 #Creates an envelope then plots it
-def create_and_plot_envelope(plt, time, chan_num, adcValues):
+def create_and_plot_envelope(time, chan_num, adcValues):
     s = adcValues#[x_min_index : x_max_index] #This is your noisy vector of values.
 
     q_u = zeros(s.shape)
@@ -107,7 +126,7 @@ def create_and_plot_envelope(plt, time, chan_num, adcValues):
     if chan_num == 5:
         col = "brown"
 
-    plt.plot(time, q_u, color = col, linewidth = 3, label = chan_name + " upper envelope")
+    plot3.plot(time, q_u, color = col, linewidth = 3, label = chan_name + " upper envelope")
     #plt.plot(time, q_l,'g', label = chan_name + " lower envelope")
 
     # Find peak coordinates
@@ -130,7 +149,7 @@ def find_channel_mean(cut):
     return chan_mean
 
 
-def find_signals(row, fig, time, env_list, mean_list, bin_range):
+def find_signals(row, time, env_list, mean_list, bin_range):
     
     global time_list
     if max(time_list) - min(time_list) <= 100:
@@ -207,8 +226,8 @@ def find_signals(row, fig, time, env_list, mean_list, bin_range):
                     if comp_event_begin >= -1000 and comp_event_end <= 0:
                         cosmic_ray_logger.info("    Event " + str(row) + ":")
                         cosmic_ray_logger.info("        A coinciding signal was detected in channels " + str(chans_with_c_event) + " and begins at or around t {:.0f} ns".format(event_begin) + " and ends at or around t {:.0f} ns".format(comp_event_end))# + " ns ( of {:+07.3f}".format(cut[i + bin_range] + " mV)"))
-                    make_histogram(fig, time, coincidence_list, bin_range)
-                    make_heatmap(fig, time, coincidence_list)
+                    make_histogram(time, coincidence_list, bin_range)
+                    make_heatmap(time, coincidence_list)
                     find_direction(coincidence_list)   
                     chans_with_c_event = []
                     coincidence_list = []
@@ -232,8 +251,8 @@ def find_signals(row, fig, time, env_list, mean_list, bin_range):
                             cosmic_ray_logger.info("    Event " + str(row) + ":")
                             cosmic_ray_logger.info("        A coinciding signal was detected in channels " + str(chans_with_c_event) + " and begins at or around t {:.0f} ns".format(event_begin) + " and ends at or around t {:.0f} ns".format(comp_event_end))# + " ns ( of {:+07.3f}".format(cut[i + bin_range] + " mV)"))
                         print(coincidence_list) 
-                        make_histogram(fig, time, coincidence_list, bin_range)
-                        make_heatmap(fig, time, coincidence_list)
+                        make_histogram(time, coincidence_list, bin_range)
+                        make_heatmap(time, coincidence_list)
                         find_direction(coincidence_list)    
                         chans_with_c_event = []
                         coincidence_list = []
@@ -245,8 +264,8 @@ def find_signals(row, fig, time, env_list, mean_list, bin_range):
                     if comp_event_begin >= -1000 and comp_event_end <= 0:
                         cosmic_ray_logger.info("    Event " + str(row) + ":")
                         cosmic_ray_logger.info("        A coinciding signal was detected in channels " + str(chans_with_c_event) + " and begins at or around t {:.0f} ns".format(event_begin) + " and ends at or around t {:.0f} ns".format(comp_event_end))# + " ns ( of {:+07.3f}".format(cut[i + bin_range] + " mV)"))
-                    make_histogram(fig, time, coincidence_list, bin_range)
-                    make_heatmap(fig, time, coincidence_list)
+                    make_histogram(time, coincidence_list, bin_range)
+                    make_heatmap(time, coincidence_list)
                     find_direction(coincidence_list)    
                     chans_with_c_event = [] 
                     coincidence_list = []
@@ -303,16 +322,8 @@ def sort_channels(cut_list):
         difference_list[channel] = int(time_difference)
         event_logger.info("        ch" + str(channel) + "    t: " + "{:+8.0f}".format(time_list[channel]) + " ns ({:+04.0f} ns)".format(time_difference) + " with an amplitude of " + "{:10.3f}".format(amplitude_list[channel]) + " mV")
 
-    # Each list must be emptied after each event
-    #time_list = []
-    
-    #mean_list = []
-    #envelope_list = []
 
-    #return sorted_channel_list
-
-
-def make_histogram(fig, time, coincidence_list, bin_range):
+def make_histogram(time, coincidence_list, bin_range):
 
     # Creates histo_list if this is the first iteration of the program
     if (time[1] - time[0] != 1):
@@ -333,7 +344,7 @@ def make_histogram(fig, time, coincidence_list, bin_range):
                 if (event_index + b) < len(time) - 1:
                     histo_list[chan_num][event_index + b] += 1
     for chan_num in range(0, NUMBER_OF_CHANNELS): 
-        plot4 = fig.add_subplot(NUMBER_OF_CHANNELS, 2, chan_num * 2 + 1)
+        plot4 = fig2.add_subplot(NUMBER_OF_CHANNELS, 2, chan_num * 2 + 1)
         plot4.clear()
         if chan_num == 0:
             col = "blue"
@@ -358,7 +369,7 @@ def make_histogram(fig, time, coincidence_list, bin_range):
         plot4.grid(1)
 
 
-def make_heatmap(fig, time, coincidence_list):
+def make_heatmap(time, coincidence_list):
 
     if (time[1] - time[0] != 1):
         time = np.arange(time[0], time[-1] + 1, step = 1)# - time[0]) # Must fix time so that it has tep of 1
@@ -379,7 +390,7 @@ def make_heatmap(fig, time, coincidence_list):
                 heat_list[chan_num][event_index + d] += 1
 
     for chan_num in range(0, NUMBER_OF_CHANNELS):
-        plot5 = fig.add_subplot(NUMBER_OF_CHANNELS, 2, chan_num * 2 + 2)
+        plot5 = fig2.add_subplot(NUMBER_OF_CHANNELS, 2, chan_num * 2 + 2)
         plot5.clear()
         if chan_num == 0:
             col = "blue"
@@ -507,19 +518,30 @@ def find_direction(coincidence_list):
     #return zenith, azimuth
 
 
+# Searches for coincidence amongst channels
+def analyze_channels(row, time, cut_list, bin_range):
 
-#def analyze_channels(fig, plt, time, cut_list, bin_range, X_MIN, X_MAX):
-#    global envelope_list
-#    global time_list 
-#    global amplitude_list
-#    global mean_list
-#    global event_list
-#    global sorted_channel_list
+    channel_envelopes = [] # Stores the channel envelopes. Index corresponds to channel number
+    channel_means = [] # Stores the channel means. Index corresponds to channel number
 
-#    sorted_channel_list = sort_channels(cut_list)
+    time_cut = np.round(time) # Rounds each value to an int (each value is originally a float)
+    x_min_index = np.where(time_cut == X_MIN)[0][0] # Returns time index of X_MIN
+    x_max_index = np.where(time_cut == X_MAX)[0][0] + 1 # Returns time index of X_MAX
+    time_cut = time_cut[x_min_index : x_max_index] # Cuts the time array down to only what will be analyzed
+    
+    # Analyze each channel separately
+    for channel_number, cut in enumerate(cut_list):
+        event_logger.info("    Channel " + str(channel_number) + ":")
+        channel_means.append(find_channel_mean(cut)) # Finds mean of the channel cut
+        channel_envelopes.append(create_and_plot_envelope(time_cut, channel_number, cut[x_min_index : x_max_index]))
 
-#    return sorted_channel_list
-
+    sort_channels(cut_list)
+    coincidence = find_signals(row, time_cut, channel_envelopes, channel_means, bin_range)
+    
+    return coincidence
+    
+        
+'''
 # Plots a close up of the peak events. 
 def make_peak_plot(plt, time):
     begin_times = [] # Stores all event begin times. Used to find smallest value
@@ -551,7 +573,7 @@ def make_peak_plot(plt, time):
     plt.set_xlim(min(begin_times), max(end_times))
     plt.legend()
     plt.grid()
-
+'''
 
 
     

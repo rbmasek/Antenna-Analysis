@@ -216,7 +216,7 @@ def search_events(args):
         cut_list = [adcValuesCh0Cut, adcValuesCh1Cut, adcValuesCh2Cut, adcValuesCh3Cut]#, adcValuesCh4Cut[x_min_index : x_max_index], adcValuesCh5Cut[x_min_index : x_max_index]] #Stores each channel in a list so that the commands can be iterated instead of hard coded.
 
         coincidence = False # Reset boolean each iteration
-        coincidence = analyze_channels(row, time, cut_list, args.BIN_RANGE)
+        coincidence = analyze_channels(row, time, cut_list, args.BIN_RANGE, event_timestamp)
 
         if coincidence == True:
 
@@ -333,21 +333,21 @@ if __name__  == "__main__":
         fig2.canvas.draw()
         #fig.canvas.flush_events()
         fig2.savefig(plot_file, bbox_inches='tight')
-        sleep(10)
+        sleep(3)
         event_logger.info("Figure saved to \"" + plot_file + "\"\n")
         event_logger.info("------------------------------------------------------------")
         event_logger.info("------------------------------------------------------------")
         event_logger.info("END LOG")
         event_logger.info("------------------------------------------------------------")
-        event_logger.info("------------------------------------------------------------")   
+        event_logger.info("------------------------------------------------------------\n\n")   
 
         coincidence_logger.info("------------------------------------------------------------")
         coincidence_logger.info("END COINCIDENCE REPORT")
-        coincidence_logger.info("------------------------------------------------------------")
+        coincidence_logger.info("------------------------------------------------------------\n\n")
 
         cosmic_ray_logger.info("------------------------------------------------------------")
         cosmic_ray_logger.info("END COSMIC_RAY REPORT")
-        cosmic_ray_logger.info("------------------------------------------------------------")
+        cosmic_ray_logger.info("------------------------------------------------------------\n\n")
         
     except KeyboardInterrupt:
         
@@ -364,15 +364,15 @@ if __name__  == "__main__":
         event_logger.info("------------------------------------------------------------")
         event_logger.info("END LOG")
         event_logger.info("------------------------------------------------------------")
-        event_logger.info("------------------------------------------------------------")
+        event_logger.info("------------------------------------------------------------\n\n")
 
         coincidence_logger.info("------------------------------------------------------------")
         coincidence_logger.info("END COINCIDENCE REPORT")
-        coincidence_logger.info("------------------------------------------------------------")
+        coincidence_logger.info("------------------------------------------------------------\n\n")
 
         cosmic_ray_logger.info("------------------------------------------------------------")
         cosmic_ray_logger.info("END COSMIC_RAY REPORT")
-        cosmic_ray_logger.info("------------------------------------------------------------")
+        cosmic_ray_logger.info("------------------------------------------------------------\n\n")
 
     except Exception as e:
         
@@ -391,15 +391,15 @@ if __name__  == "__main__":
         event_logger.info("------------------------------------------------------------")
         event_logger.info("END LOG")
         event_logger.info("------------------------------------------------------------")
-        event_logger.info("------------------------------------------------------------")
+        event_logger.info("------------------------------------------------------------\n\n")
 
         coincidence_logger.info("------------------------------------------------------------")
         coincidence_logger.info("END COINCIDENCE REPORT")
-        coincidence_logger.info("------------------------------------------------------------")
+        coincidence_logger.info("------------------------------------------------------------\n\n")
 
         cosmic_ray_logger.info("------------------------------------------------------------")
         cosmic_ray_logger.info("END COSMIC_RAY REPORT")
-        cosmic_ray_logger.info("------------------------------------------------------------")
+        cosmic_ray_logger.info("------------------------------------------------------------\n\n")
 
     
 conn.close()

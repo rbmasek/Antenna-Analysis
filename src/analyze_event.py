@@ -38,9 +38,9 @@ sorted_channel_list = [] # Stores the channels in the order in which they peaked
 #mean_list = [] # Stores the mean value of each channel. The index corresponds to the channel.
 
 # +y axis aligned with north and +x axis aligned with east
-A0 = np.array([4.80, 2.15, 0.001])#.reshape((3,1)) # ch0
-A1 = np.array([7.00, 4.82, 0.001])#.reshape((3,1)) # ch1
-A2 = np.array([0, 0, 0])#.reshape((3,1)) # ch3
+A0 = np.array([4.80, 2.15, 0.001])
+A1 = np.array([7.00, 4.82, 0.001])
+A2 = np.array([0, 0, 0])
 
 # Allows the creation of several loggers
 file_formatter = logging.Formatter("%(asctime)s: %(name)s: %(levelname)-8s %(message)s")
@@ -71,17 +71,13 @@ cosmic_ray_logger = setup_logger("cosmic_ray_logger", "cosmic.log", consol = Fal
 #Retrieved from https://stackoverflow.com/questions/34235530/python-how-to-get-high-and-low-envelope-of-a-signal
 #Creates an envelope then plots it
 def create_and_plot_envelope(time, chan_num, adcValues):
-    s = adcValues#[x_min_index : x_max_index] #This is your noisy vector of values.
+    s = adcValues #This is your noisy vector of values.
 
     q_u = zeros(s.shape)
-    #q_l = zeros(s.shape)
 
     #Prepend the first value of (s) to the interpolating values. This forces the model to use the same starting point for both the upper and lower envelope models.
     u_x = [0,]
     u_y = [s[0],]
-
-    #l_x = [0,]
-    #l_y = [s[0],]
 
     #Detect peaks and troughs and mark their location in u_x,u_y,l_x,l_y respectively.
     for k in range(1,len(s)-1):
@@ -89,25 +85,16 @@ def create_and_plot_envelope(time, chan_num, adcValues):
             u_x.append(k)
             u_y.append(s[k])
 
-        #if (sign(s[k]-s[k-1])==-1) and ((sign(s[k]-s[k+1]))==-1):
-        #    l_x.append(k)
-        #    l_y.append(s[k])
-
     #Append the last value of (s) to the interpolating values. This forces the model to use the same ending point for both the upper and lower envelope models.
     u_x.append(len(s)-1)
     u_y.append(s[-1])
 
-    #l_x.append(len(s)-1)
-    #l_y.append(s[-1])
-
     #Fit suitable models to the data. Here I am using cubic splines, similarly to the MATLAB example given in the question.
     u_p = interp1d(u_x,u_y, kind = 'cubic',bounds_error = False, fill_value=0.0)
-    #l_p = interp1d(l_x,l_y,kind = 'cubic',bounds_error = False, fill_value=0.0)
 
     #Evaluate each model over the domain of (s)
     for k in range(0,len(s)):
         q_u[k] = np.real(u_p(k))
-        #q_l[k] = np.real(l_p(k))
 
     #Plot everything
     chan_name = "ch" + str(chan_num)
@@ -128,7 +115,6 @@ def create_and_plot_envelope(time, chan_num, adcValues):
         col = "brown"
 
     plot3.plot(time, q_u, color = col, linewidth = 3, label = chan_name + " upper envelope")
-    #plt.plot(time, q_l,'g', label = chan_name + " lower envelope")
 
     # Find peak coordinates
     index = np.where(q_u == np.max(q_u))[0][0] # Envelope index of peak ampltiude
@@ -163,30 +149,19 @@ def find_signals(row, time, env_list, mean_list, bin_range, timestamp):
             chan_max = np.max(env)
             mean_max_diff = chan_max - chan_mean
 
-            # env = env - chan_mean
-            #env = env - np.min(env) # Sets the envelope minimum to y = 0
-            #chan_max = np.max(env) # Finds the new maximum
-            #chan_mean = np.mean(env)
-
-            # print("Chan: " + str(chan_num) + " Mean: " + str(chan_mean) + " Max: " + str(chan_max)+ " Diff: " + str(mean_max_diff))
-
             for i in range(0, len(time) - bin_range):
                 
-                temp_mean = np.mean(np.real(env[i : (i + bin_range)]))# - chan_mean
+                temp_mean = np.mean(np.real(env[i : (i + bin_range)]))
                 temp_diff = temp_mean - chan_mean
-                # print(temp_diff)
 
                 if (temp_diff > mean_max_diff * 0.5) and signal_found is False:
                     signal_found = True
-                    signal_begin = time[i] #+ (bin_range / 2)
-                    #log_string = "            A signal may begin at or around t {:.0f} ns".format(signal_begin)# + " ns ( of {:+07.3f}".format(cut[i + bin_range] + " mV)"))
+                    signal_begin = time[i]
 
                 else:
                     if ((temp_diff < mean_max_diff * 0.5) or (i == len(time) - bin_range - 1)) and signal_found is True:
                         signal_found = False
                         signal_end = time[i + bin_range]
-                        #log_string = log_string + " and end at or around t {:.0f} ns".format(signal_end)
-                        #event_logger.info(log_string)
 
                         if (signal_begin != time[0] and signal_end != time[-1]) and ((signal_end - signal_begin) < 300):
                             event_info.append(chan_num)
@@ -291,11 +266,6 @@ def find_signals(row, time, env_list, mean_list, bin_range, timestamp):
                     coincidence_list = []
                     continue
 
-        # Ensures that the histogram and heatmap is updated when a coinciding signal is found
-        #for channel_number in range(0, number_of_channels):
-        #    make_histogram(fig, time, None, bin_range)
-        #    make_heatmap(fig, time, None)
-
         # Reset each list after use
         amplitude_list = []
         event_list = []
@@ -333,7 +303,7 @@ def make_histogram(time, coincidence_list, bin_range):
 
     # Creates histo_list if this is the first iteration of the program
     if (time[1] - time[0] != 1):
-        time = np.arange(time[0], time[-1] + 1, step = 1)# - time[0]) # Must fix time so that it has tep of 1
+        time = np.arange(time[0], time[-1] + 1, step = 1) # Must fix time so that it has tep of 1
 
     if "histo_list" not in globals():
         global histo_list
@@ -378,7 +348,7 @@ def make_histogram(time, coincidence_list, bin_range):
 def make_heatmap(time, coincidence_list):
 
     if (time[1] - time[0] != 1):
-        time = np.arange(time[0], time[-1] + 1, step = 1)# - time[0]) # Must fix time so that it has tep of 1
+        time = np.arange(time[0], time[-1] + 1, step = 1) # Must fix time so that it has a step of 1
 
     # Creates heat_list if this is the first iteration of the program
     if "heat_list" not in globals():
@@ -422,61 +392,37 @@ def make_heatmap(time, coincidence_list):
         plot5.set_ylabel("Relative Frequency (% of total)")
         plot5.set_title("Channel " + str(chan_num) + " Heatmap")
         plot5.set_xlim(time[0], time[len(time) - 1])
-        plot5.set_ylim(0, (heat_max / heat_sum * 100) * 1.1)# + (heat_max * 0.2))
+        plot5.set_ylim(0, (heat_max / heat_sum * 100) * 1.1)
         plot5.grid(1)
                  
-
+# Method derived from arXiv:1702.04902
 def find_direction(coincidence_list, timestamp):
     time_list = [] # Stores the signal begin times where the index corresponds to the channel number
     event_list = [] # Stores the event by channel number (event_list[0] corresponds to ch0)
 
-    # Remove ch2 from sorted list
+    # Removes the channel without matching polariation from sorted list
     new_coincidence_list = []
     for i, signal in enumerate(coincidence_list):
         chan = signal[0]
-        #time_begin = signal[1]
         if int(chan) != 2:
             new_coincidence_list.append(signal)
-            #time_list.append(time_begin)
 
     event_list = sorted(new_coincidence_list, key = operator.itemgetter(0))
-    # print(event_list)
 
     for event in event_list:
         time_list.append(event[1])
-    # print(time_list)
 
     # Checks that all three antennas received a signal
     if len(new_coincidence_list) != 3:
         return
 
-    #print(coincidence_list)
-    #print(time_list)
-    #print(new_coincidence_list)
-
     antenna_list = [A0, A1, A2]
-    '''
-    # Sort antenna coordinates by time of signal begin
-    sorted_antenna_list = []
-    for signal in new_coincidence_list:
-        channel = signal[0]
-        if int(channel) == 3:
-            sorted_antenna_list.append(antenna_list[channel - 1])
-        else:
-            sorted_antenna_list.append(antenna_list[channel])
-    '''
-
-    #print(sorted_antenna_list)
-    #print(sorted_antenna_list[2][1])
-    #print(time_list[new_coincidence_list[0]])
 
     # D is a unit vector
     D = ( np.cross( (antenna_list[1] - antenna_list[0]), (antenna_list[2] - antenna_list[0]) ) ) / ( np.linalg.norm( np.cross( (antenna_list[1] - antenna_list[0]), (antenna_list[2] - antenna_list[0]) ) ) )
     D_x = D[0]
     D_y = D[1]
     D_z = D[2]
-    # print(D)
-    #print("D length: " + str(np.linalg.norm(D)))
 
     A_tilde = np.zeros((3,3))
     xy_sqrt = np.sqrt( np.square(D_x) + np.square(D_y) )
@@ -489,12 +435,10 @@ def find_direction(coincidence_list, timestamp):
     A_tilde[2][0] = D_x
     A_tilde[2][1] = D_y
     A_tilde[2][2] = D_z
-    #print(A_tilde)
     
     r_prime = []
     for r in antenna_list:
         r_prime.append( A_tilde.dot(r) )
-    # print(r_prime)
 
     d_x_prime = SPEED_OF_LIGHT * ( ( (time_list[0] - time_list[2]) * (r_prime[1][1] - r_prime[0][1]) ) - ( (time_list[0] - time_list[1]) * (r_prime[2][1] - r_prime[0][1]) ) ) / ( ( (r_prime[2][0] - r_prime[0][0]) * (r_prime[1][1] - r_prime[0][1]) ) - ( (r_prime[1][0] - r_prime[0][0]) * (r_prime[2][1] - r_prime[0][1]) ) ) 
     d_y_prime = SPEED_OF_LIGHT * ( ( (time_list[0] - time_list[1]) * (r_prime[2][0] - r_prime[0][0]) ) - ( (time_list[0] - time_list[2]) * (r_prime[1][0] - r_prime[0][0]) ) ) / ( ( (r_prime[2][0] - r_prime[0][0]) * (r_prime[1][1] - r_prime[0][1]) ) - ( (r_prime[1][0] - r_prime[0][0]) * (r_prime[2][1] - r_prime[0][1]) ) ) 
@@ -502,55 +446,47 @@ def find_direction(coincidence_list, timestamp):
 
     #d_prime is a unit vector
     d_prime = np.array((d_x_prime, d_y_prime, d_z_prime))
-    # print(d_prime)
-    # print(np.linalg.norm(d_prime))
+
     if np.linalg.norm(d_prime) >= 0.999 and np.linalg.norm(d_prime) < 1.0001:
-        # print("D PRIME LENGHT EQUALS ONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        # print("d_prime length: " + str(np.linalg.norm(d_prime)))
 
+        # d is a unit vector
         d = (np.linalg.inv(A_tilde)).dot(d_prime)
-        # print(d)
-        # print(np.linalg.norm(d))
-        zenith = round(np.arccos(d[2]), 4)
-        azimuth= round(np.arccos(d[0] / np.sin(zenith)), 2)
-        azimuth_comp = round(np.arcsin(d[1] / np.sin(zenith)), 2)
-        # print(zenith)
-        # print(azimuth)
-        # print(azimuth_comp)
-        # Compares the two calculated value for the azimuth. If they are equal, the event is documented.
-        if True: #azimuth == azimuth_comp:
-            event_logger.info("        Antenna Zenith: {:5.2f}  degrees".format(zenith * 57.2958))
-            event_logger.info("        Antenna Azimuth: {:5.2f}  degrees".format(azimuth * 57.2958))
 
-            coincidence_logger.info("        Antenna Zenith: {:5.2f}  degrees".format(zenith * 57.2958))
-            coincidence_logger.info("        Antenna Azimuth: {:5.2f}  degrees".format(azimuth * 57.2958))
+        zenith = np.arccos(d[2]) * 57.2958
+        azimuth = np.arccos(d[0] / np.sin(zenith)) * 57.2958
 
-            if new_coincidence_list[0][1] >= -1000 and new_coincidence_list[0][2] <= 0:
-                cosmic_ray_logger.info("        Antenna Zenith: {:5.2f}  degrees".format(zenith * 57.2958))
-                cosmic_ray_logger.info("        Antenna Azimuth: {:5.2f}  degrees".format(azimuth * 57.2958))
+        event_logger.info("        Antenna Zenith: {:5.2f}  degrees".format(zenith))
+        event_logger.info("        Antenna Azimuth: {:5.2f}  degrees".format(azimuth))
 
-                try:
-                    mk_event_num, mk_timestamp, mk_azimuth, mk_zenith = find_mk_event(timestamp)
+        coincidence_logger.info("        Antenna Zenith: {:5.2f}  degrees".format(zenith))
+        coincidence_logger.info("        Antenna Azimuth: {:5.2f}  degrees".format(azimuth))
 
-                except Exception as e:
-                    cosmic_ray_logger.warning("        Error when reading MiniK data: " + str(e) + ". Skipping...")
-                    return
+        # Checks that the event falls within the time range in which cosmic ray events would be found
+        if new_coincidence_list[0][1] >= -1000 and new_coincidence_list[0][2] <= 0:
+            cosmic_ray_logger.info("        Antenna Zenith: {:5.2f}  degrees".format(zenith))
+            cosmic_ray_logger.info("        Antenna Azimuth: {:5.2f}  degrees".format(azimuth))
 
-                # Convert mk_azimuth so that it is with respect to North
-                # print(mk_azimuth)
-                mk_azimuth += 194.5
-                if mk_azimuth >= 360:
-                    mk_azimuth %= 360
-                # print(mk_azimuth)
+            # MikiK data is not always structured properly. This prevents errors from being processed.
+            try:
+                mk_event_num, mk_timestamp, mk_azimuth, mk_zenith = find_mk_event(timestamp)
 
-                # Compares the minik angles to the antenna angles
-                if True:#azimuth >= mk_azimuth - 5 and azimuth <= mk_azimuth + 5:
-                    event_logger.info("        MiniK Zenith: {:5.2f}  degrees".format(mk_zenith))
-                    event_logger.info("        MiniK Azimuth: {:5.2f}  degrees".format(mk_azimuth))
-                    coincidence_logger.info("        MiniK Zenith: {:5.2f}  degrees".format(mk_zenith))
-                    coincidence_logger.info("        MiniK Azimuth: {:5.2f}  degrees".format(mk_azimuth))
-                    cosmic_ray_logger.info("        MiniK Zenith: {:5.2f}  degrees".format(mk_zenith))
-                    cosmic_ray_logger.info("        MiniK Azimuth: {:5.2f}  degrees".format(mk_azimuth))
+            except Exception as e:
+                cosmic_ray_logger.warning("        Error when reading MiniK data: " + str(e) + ". Skipping...")
+                return
+
+            # Convert mk_azimuth so that it is with respect to North
+            mk_azimuth += 194.5
+            if mk_azimuth >= 360:
+                mk_azimuth %= 360
+
+            # Compares the minik angles to the antenna angles
+            if True:#azimuth >= mk_azimuth - 5 and azimuth <= mk_azimuth + 5:
+                event_logger.info("        MiniK Zenith: {:5.2f}  degrees".format(mk_zenith))
+                event_logger.info("        MiniK Azimuth: {:5.2f}  degrees".format(mk_azimuth))
+                coincidence_logger.info("        MiniK Zenith: {:5.2f}  degrees".format(mk_zenith))
+                coincidence_logger.info("        MiniK Azimuth: {:5.2f}  degrees".format(mk_azimuth))
+                cosmic_ray_logger.info("        MiniK Zenith: {:5.2f}  degrees".format(mk_zenith))
+                cosmic_ray_logger.info("        MiniK Azimuth: {:5.2f}  degrees".format(mk_azimuth))
 
 
 
@@ -575,66 +511,3 @@ def analyze_channels(row, time, cut_list, bin_range, timestamp):
     coincidence = find_signals(row, time_cut, channel_envelopes, channel_means, bin_range, timestamp)
     
     return coincidence
-    
-        
-'''
-# Plots a close up of the peak events. 
-def make_peak_plot(plt, time):
-    begin_times = [] # Stores all event begin times. Used to find smallest value
-    end_times = [] # Stores all event end times. Used to find largest value
-
-    for event in event_list:
-        event = event.split(",")
-        chan_num = int(event[0])
-        signal_begin = int(event[1])
-        signal_end = int(event[2])
-
-        if time_list[chan_num] > signal_begin and time_list[chan_num] < signal_end:
-            begin_times.append(signal_begin)
-            end_times.append(signal_end)
-
-            if chan_num == 0:
-                col = "blue"
-            if chan_num == 1:
-                col = "red"
-            if chan_num == 2:
-                col = "green"
-            if chan_num == 3:
-                col = "orange"
-            plt.plot(time, envelope_list[chan_num], col, linewidth = 3, label = "ch" + str(chan_num) + " peak event")
-
-    plt.set_xlabel("Time (ns)")
-    plt.set_ylabel("Amplitude (mV)")
-    plt.set_title("Envelopes of Peak Events")
-    plt.set_xlim(min(begin_times), max(end_times))
-    plt.legend()
-    plt.grid()
-'''
-
-
-    
-#Old stuff
-
-# Hilbert Method
-#nfft = len(ch0FourierCut)
-#analytic_signal = hilbert(np.real(adcValuesCh0Cut), N = nfft)
-#envelope = np.abs(np.imag(analytic_signal))
-
-
-# Multitaper Method
-#N = len(adcValuesCh0Cut)
-#nfft = np.power( 2, int(np.ceil(np.log2(N))) )
-#NW = N / 2
-#fm = int(np.round(float(200) * nfft / N))
-#(dpss, eigs) = nt_alg.dpss_windows(N, NW, 2 * NW)
-#xk = nt_alg.tapered_spectra(adcValuesCh0Cut, dpss, nfft)
-#w, n = nt_ut.adaptive_weights(xk, eigs, sides='onesided')
-#mtm_bband = np.sum(2 * (xk[:, fm] * np.sqrt(eigs))[:,None] * dpss, axis = 0)# - np.abs(np.real(adcValuesCh0Cut[0]))
-#mtm_bband = butter_lowpass_filter(mtm_bband, np.max(adcValuesCh0Cut), samplingFreq)
-
-
-#def save_cut(t, env):
-#    combined_array = np.vstack((t, env)).T
-#    np.savetxt("cut_data.txt", combined_array)
-#    print("Cut data saved to \"cut_data.txt\"")
-#save_cut(time, adcValuesCh0Cut)

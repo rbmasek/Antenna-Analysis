@@ -62,7 +62,7 @@ def find_mk_event(ant_event_time):
 			data_line += in_file.readline().split("\t")
 		
 		timestamp = int(data_line[1])
-		if ant_event_time >= timestamp - 5 and ant_event_time <= timestamp + 5:
+		if ant_event_time >= timestamp - 2 and ant_event_time <= timestamp + 2:
 			# print(data_line[3])
 			# print(data_line[4])
 			event_num = int(data_line[0])

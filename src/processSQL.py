@@ -269,23 +269,6 @@ def search_events(args):
             
             
         event_logger.info("################################################\n")
-        
-        #    coincidence_logger.info("Event " + str(row) + ":")
-        #    coincidence_logger.info("    Event Timestamp (sec): " + str(event_timestamp))
-        #    log_string = log_string.split("\n")    
-        #    for i in range(0 , len(log_string) - 1): # The minus 1 is there because the last string will always be ""
-        #        stri = log_string[i]
-        #        coincidence_logger.info(stri) # Logs all coincidence signals to file
-                # Search for coincidence signals between -1000 ns and 0 ns
-        #        signal_begin = int(stri.split("at or around t ")[1].split(" ns")[0])
-        #        signal_end = int(stri.split("at or around t ")[2].split(" ns")[0])
-        #        if signal_begin >= -1000 and signal_end <= 0:
-        #            cosmic_ray_logger.info("Event " + str(row) + ":")
-        #            cosmic_ray_logger.info("    Event Timestamp (sec): " + str(event_timestamp))
-        #            cosmic_ray_logger.info(stri)
-
-            # Find direction of the signal with the largest amplitude
-            #find_direction(sorted_channel_list)
 
         
 if __name__  == "__main__":
@@ -331,7 +314,6 @@ if __name__  == "__main__":
         # Saves the final figure to a PDF
         fig1.canvas.draw()
         fig2.canvas.draw()
-        #fig.canvas.flush_events()
         fig2.savefig(plot_file, bbox_inches='tight')
         sleep(3)
         event_logger.info("Figure saved to \"" + plot_file + "\"\n")
@@ -356,7 +338,6 @@ if __name__  == "__main__":
         # Saves the existing figure to a PDF
         fig1.canvas.draw()
         fig2.canvas.draw()
-        #fig.canvas.flush_events()
         fig2.savefig(plot_file, bbox_inches='tight')
         
         event_logger.info("Figure saved to \"" + plot_file + "\"\n")
@@ -383,7 +364,6 @@ if __name__  == "__main__":
         # Saves the existing figure to a PDF
         fig1.canvas.draw()
         fig2.canvas.draw()
-        #fig.canvas.flush_events()
         fig2.savefig(plot_file, bbox_inches='tight')
 
         event_logger.info("Figure saved to \"" + plot_file + "\"\n")

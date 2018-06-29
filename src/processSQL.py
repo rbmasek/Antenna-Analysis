@@ -5,9 +5,7 @@ import sqlite3
 import datetime
 import matplotlib as mpl
 import scipy.fftpack as sfft
-import sys
 from time import sleep
-import argparse
 from analyze_event import *
 from frequencyCut import fourierCut # Cutting the frequencies is done in the frequencyCut.py
 
@@ -31,11 +29,14 @@ def convertCh6(adcValue):
 def convertCh7(adcValue):
     return 0.0311 * adcValue + 2.15
 
+'''
 if len(sys.argv) == 1:
     fileLoc = input_file
 else:
     fileLoc = sys.argv[1]
+'''
 
+fileLoc = input_file
 conn = sqlite3.connect(fileLoc)
 conn.row_factory = sqlite3.Row
 print("\nConnection established\n")
@@ -219,7 +220,7 @@ def search_events(args):
         coincidence = analyze_channels(row, time, cut_list, args.BIN_RANGE, event_timestamp)
 
         if coincidence == True:
-
+            
             plot1.plot(time, adcValuesCh0, label = "CH0", color = 'blue')
             plot1.plot(time, adcValuesCh1, label = "CH1", color = 'red')
             plot1.plot(time, adcValuesCh2, label = "CH2", color = 'green')
@@ -277,14 +278,22 @@ if __name__  == "__main__":
         # Define some constants
         parser = argparse.ArgumentParser(description = "Define constants for the minimum event number, the maximum event number, and the bin range.")
         parser.add_argument("-min", type = int, dest = "SEARCH_MIN", default = 0,
-                    help = "integer value for the minimum event number")
+                            help = "integer value for the minimum event number")
         parser.add_argument("-max", type = int, dest = "SEARCH_MAX", default = len(rowEvents),
-                    help = "integer value for the maximum event number")
-        parser.add_argument("-b", type = int, dest = "BIN_RANGE", default = 20,
-                    help = "integer value for the bin range")
-
+                            help = "integer value for the maximum event number")
+        parser.add_argument("-bin", type = int, dest = "BIN_RANGE", default = 20,
+                            help = "integer value for the bin range")
+        
         args = parser.parse_args()
-        #print(args)
+
+        # Ensure that the specified conditions are acceptable
+        if args.SEARCH_MIN > args.SEARCH_MAX or args.SEARCH_MIN == args.SEARCH_MAX:
+            event_logger.error("Argument [SEARCH_MIN] (" + str(args.SEARCH_MIN) + ") cannot be greater than or equal to argument [SEARCH_MAX] (" + str(args.SEARCH_MAX) + "). Exitting...")
+            sys.exit()
+
+        if args.SEARCH_MAX > len(rowEvents):
+            event_logger.error("Argument [SEARCH_MAX] (" + str(args.SEARCH_MAX) + ") cannot be larger than the total number of events (" + str(len(rowEvents)) + "). Exitting...")
+            sys.exit()
 
         event_logger.info("------------------------------------------------------------")
         event_logger.info("------------------------------------------------------------")
@@ -293,7 +302,7 @@ if __name__  == "__main__":
         event_logger.info("Number of antenna channels: " + str(NUMBER_OF_CHANNELS))
         event_logger.info("Sampling Frequency: " + str(samplingFreq) + " Hz")
         event_logger.info("Sampling Steps: " + str(samplingStepTime))
-        event_logger.info("Time range: " + str(args.SEARCH_MIN) + " ns to " + str(args.SEARCH_MAX) + " ns")
+        event_logger.info("Event range: [" + str(args.SEARCH_MIN) + ", " + str(args.SEARCH_MAX) + ")")
         event_logger.info("Bin range: " + str(args.BIN_RANGE) + " ns")
         event_logger.info("------------------------------------------------------------")
         event_logger.info("------------------------------------------------------------\n")
@@ -315,7 +324,7 @@ if __name__  == "__main__":
         fig1.canvas.draw()
         fig2.canvas.draw()
         fig2.savefig(plot_file, bbox_inches='tight')
-        sleep(3)
+        
         event_logger.info("Figure saved to \"" + plot_file + "\"\n")
         event_logger.info("------------------------------------------------------------")
         event_logger.info("------------------------------------------------------------")

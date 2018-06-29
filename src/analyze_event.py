@@ -1,6 +1,8 @@
-import numpy as np
 import logging
+import argparse
+import sys
 import operator
+import numpy as np
 import matplotlib.pyplot as plt
 from numpy import array, sign, zeros
 from scipy.interpolate import interp1d
@@ -15,7 +17,7 @@ X_MIN = -2000
 X_MAX = 100
 
 # Define directories
-directory = "/home/user/Desktop/rise/Antenna-Analysis"
+directory = "/home/reed/Desktop/rise/Antenna-Analysis"
 input_file  = directory + "/databases/Measurement_20180605/WaveDump_20180605_124246.db"
 
 # Define all plot objects
@@ -24,10 +26,9 @@ fig1 = plt.figure(figsize = (12, 6))
 plot1 = fig1.add_subplot(3, 1, 1)
 plot2 = fig1.add_subplot(3, 1, 2)
 plot3 = fig1.add_subplot(3, 1, 3)
-
 fig2 = plt.figure(figsize = (12, 10))
-
 plt.subplots_adjust(hspace = 1)
+cmap = plt.cm.get_cmap("gist_rainbow", NUMBER_OF_CHANNELS) # Automatically assigns a color to each channel
 
 # Define global variables
 time_list = [] # Stores the time of each channel's peak frequency value. The index corresponds to the channel (i.e. time_list[0] is the time for ch0).
@@ -98,22 +99,8 @@ def create_and_plot_envelope(time, chan_num, adcValues):
 
     #Plot everything
     chan_name = "ch" + str(chan_num)
-
-    col = ""
-
-    if chan_num == 0:
-        col = "blue"
-    if chan_num == 1:
-        col = "red"
-    if chan_num == 2:
-        col = "green"
-    if chan_num == 3:
-        col = "orange"
-    if chan_num == 4:
-        col = "purple"
-    if chan_num == 5:
-        col = "brown"
-
+    
+    col = cmap(chan_num)
     plot3.plot(time, q_u, color = col, linewidth = 3, label = chan_name + " upper envelope")
 
     # Find peak coordinates
@@ -172,7 +159,6 @@ def find_signals(row, time, env_list, mean_list, bin_range, timestamp):
                             
         #Sort event_list by signal_begin
         sorted_event_list = sorted(event_list, key = operator.itemgetter(1))
-        number_of_channels = len(env_list) # Should eventually make this value a global constant defined at the beginning of the execution
 
         # Check for coincidence amongst the events
         event_logger.info("    Coinciding signals:")
@@ -192,10 +178,10 @@ def find_signals(row, time, env_list, mean_list, bin_range, timestamp):
                 chans_with_c_event.append(comp_event_chan)
                 event_begin = comp_event_begin # Marks the beginning of the event as the start of the first event
 
-            if float(len(chans_with_c_event)) >= 0.75 * number_of_channels:
+            if float(len(chans_with_c_event)) >= 0.75 * NUMBER_OF_CHANNELS:
                 coincidence = True
                 # Check if all channels coincide
-                if len(chans_with_c_event) == number_of_channels:
+                if len(chans_with_c_event) == NUMBER_OF_CHANNELS:
                     event_logger.info("        A coinciding signal was detected in channels " + str(chans_with_c_event) + " and begins at or around t {:.0f} ns".format(event_begin) + " and ends at or around t {:.0f} ns".format(comp_event_end))
                     coincidence_logger.info("    Event " + str(row) + ":")
                     coincidence_logger.info("        Event Timestamp (sec): " + str(timestamp))
@@ -204,9 +190,11 @@ def find_signals(row, time, env_list, mean_list, bin_range, timestamp):
                         cosmic_ray_logger.info("    Event " + str(row) + ":")
                         cosmic_ray_logger.info("        Event Timestamp (sec): " + str(timestamp))
                         cosmic_ray_logger.info("        A coinciding signal was detected in channels " + str(chans_with_c_event) + " and begins at or around t {:.0f} ns".format(event_begin) + " and ends at or around t {:.0f} ns".format(comp_event_end))# + " ns ( of {:+07.3f}".format(cut[i + bin_range] + " mV)"))
-                    make_histogram(time, coincidence_list, bin_range)
-                    make_heatmap(time, coincidence_list)
-                    find_direction(coincidence_list, timestamp)   
+                    reconstructed = find_direction(coincidence_list, timestamp)
+                    if True:#reconstructed == True:
+                        make_histogram(time, coincidence_list, bin_range)
+                        make_heatmap(time, coincidence_list)
+
                     chans_with_c_event = []
                     coincidence_list = []
                     continue
@@ -230,9 +218,10 @@ def find_signals(row, time, env_list, mean_list, bin_range, timestamp):
                             cosmic_ray_logger.info("    Event " + str(row) + ":")
                             cosmic_ray_logger.info("        Event Timestamp (sec): " + str(timestamp))
                             cosmic_ray_logger.info("        A coinciding signal was detected in channels " + str(chans_with_c_event) + " and begins at or around t {:.0f} ns".format(event_begin) + " and ends at or around t {:.0f} ns".format(comp_event_end))# + " ns ( of {:+07.3f}".format(cut[i + bin_range] + " mV)"))
-                        make_histogram(time, coincidence_list, bin_range)
-                        make_heatmap(time, coincidence_list)
-                        find_direction(coincidence_list, timestamp)    
+                        reconstructed = find_direction(coincidence_list, timestamp)
+                        if True:#reconstructed == True:
+                            make_histogram(time, coincidence_list, bin_range)
+                            make_heatmap(time, coincidence_list)
                         chans_with_c_event = []
                         coincidence_list = []
                         continue
@@ -245,9 +234,10 @@ def find_signals(row, time, env_list, mean_list, bin_range, timestamp):
                         cosmic_ray_logger.info("    Event " + str(row) + ":")
                         cosmic_ray_logger.info("        Event Timestamp (sec): " + str(timestamp))
                         cosmic_ray_logger.info("        A coinciding signal was detected in channels " + str(chans_with_c_event) + " and begins at or around t {:.0f} ns".format(event_begin) + " and ends at or around t {:.0f} ns".format(comp_event_end))# + " ns ( of {:+07.3f}".format(cut[i + bin_range] + " mV)"))
-                    make_histogram(time, coincidence_list, bin_range)
-                    make_heatmap(time, coincidence_list)
-                    find_direction(coincidence_list, timestamp)    
+                    reconstructed = find_direction(coincidence_list, timestamp)
+                    if True:#reconstructed == True:
+                        make_histogram(time, coincidence_list, bin_range)
+                        make_heatmap(time, coincidence_list)
                     chans_with_c_event = [] 
                     coincidence_list = []
                     continue                        
@@ -322,19 +312,8 @@ def make_histogram(time, coincidence_list, bin_range):
     for chan_num in range(0, NUMBER_OF_CHANNELS): 
         plot4 = fig2.add_subplot(NUMBER_OF_CHANNELS, 2, chan_num * 2 + 1)
         plot4.clear()
-        if chan_num == 0:
-            col = "blue"
-        if chan_num == 1:
-            col = "red"
-        if chan_num == 2:
-            col = "green"
-        if chan_num == 3:
-            col = "orange"
-        if chan_num == 4:
-            col = "purple"
-        if chan_num == 5:
-            col = "brown"
 
+        col = cmap(chan_num)
         plot4.plot(time, histo_list[chan_num][:], label = "ch" + str(chan_num) + " histo", color = col)
         plot4.fill_between(time[:], histo_list[chan_num][:], y2 = 0, color = col)
         plot4.set_xlabel("Time (ns)")
@@ -368,19 +347,8 @@ def make_heatmap(time, coincidence_list):
     for chan_num in range(0, NUMBER_OF_CHANNELS):
         plot5 = fig2.add_subplot(NUMBER_OF_CHANNELS, 2, chan_num * 2 + 2)
         plot5.clear()
-        if chan_num == 0:
-            col = "blue"
-        if chan_num == 1:
-            col = "red"
-        if chan_num == 2:
-            col = "green"
-        if chan_num == 3:
-            col = "orange"
-        if chan_num == 4:
-            col = "purple"
-        if chan_num == 5:
-            col = "brown"
 
+        col = cmap(chan_num)
         heat_max = np.max(heat_list)
         heat_sum = np.sum(heat_list[chan_num][:])
         if heat_sum == 0:
@@ -399,9 +367,10 @@ def make_heatmap(time, coincidence_list):
 def find_direction(coincidence_list, timestamp):
     time_list = [] # Stores the signal begin times where the index corresponds to the channel number
     event_list = [] # Stores the event by channel number (event_list[0] corresponds to ch0)
+    new_coincidence_list = []
+    reconstructed = False # Returned value to determine if direction reconsruction was successful.
 
     # Removes the channel without matching polariation from sorted list
-    new_coincidence_list = []
     for i, signal in enumerate(coincidence_list):
         chan = signal[0]
         if int(chan) != 2:
@@ -416,6 +385,7 @@ def find_direction(coincidence_list, timestamp):
     if len(new_coincidence_list) != 3:
         return
 
+    # Choose the antennas that will be used in the direction reconstruction
     antenna_list = [A0, A1, A2]
 
     # D is a unit vector
@@ -448,7 +418,8 @@ def find_direction(coincidence_list, timestamp):
     d_prime = np.array((d_x_prime, d_y_prime, d_z_prime))
 
     if np.linalg.norm(d_prime) >= 0.999 and np.linalg.norm(d_prime) < 1.0001:
-
+        reconstructed = True
+        
         # d is a unit vector
         d = (np.linalg.inv(A_tilde)).dot(d_prime)
 
@@ -487,6 +458,8 @@ def find_direction(coincidence_list, timestamp):
                 coincidence_logger.info("        MiniK Azimuth: {:5.2f}  degrees".format(mk_azimuth))
                 cosmic_ray_logger.info("        MiniK Zenith: {:5.2f}  degrees".format(mk_zenith))
                 cosmic_ray_logger.info("        MiniK Azimuth: {:5.2f}  degrees".format(mk_azimuth))
+
+    return reconstructed
 
 
 

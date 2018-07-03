@@ -191,7 +191,7 @@ def find_signals(row, time, env_list, mean_list, bin_range, timestamp):
                         cosmic_ray_logger.info("        Event Timestamp (sec): " + str(timestamp))
                         cosmic_ray_logger.info("        A coinciding signal was detected in channels " + str(chans_with_c_event) + " and begins at or around t {:.0f} ns".format(event_begin) + " and ends at or around t {:.0f} ns".format(comp_event_end))# + " ns ( of {:+07.3f}".format(cut[i + bin_range] + " mV)"))
                     reconstructed = find_direction(coincidence_list, timestamp)
-                    if True:#reconstructed == True:
+                    if reconstructed == True:
                         make_histogram(time, coincidence_list, bin_range)
                         make_heatmap(time, coincidence_list)
 
@@ -219,7 +219,7 @@ def find_signals(row, time, env_list, mean_list, bin_range, timestamp):
                             cosmic_ray_logger.info("        Event Timestamp (sec): " + str(timestamp))
                             cosmic_ray_logger.info("        A coinciding signal was detected in channels " + str(chans_with_c_event) + " and begins at or around t {:.0f} ns".format(event_begin) + " and ends at or around t {:.0f} ns".format(comp_event_end))# + " ns ( of {:+07.3f}".format(cut[i + bin_range] + " mV)"))
                         reconstructed = find_direction(coincidence_list, timestamp)
-                        if True:#reconstructed == True:
+                        if reconstructed == True:
                             make_histogram(time, coincidence_list, bin_range)
                             make_heatmap(time, coincidence_list)
                         chans_with_c_event = []
@@ -235,7 +235,7 @@ def find_signals(row, time, env_list, mean_list, bin_range, timestamp):
                         cosmic_ray_logger.info("        Event Timestamp (sec): " + str(timestamp))
                         cosmic_ray_logger.info("        A coinciding signal was detected in channels " + str(chans_with_c_event) + " and begins at or around t {:.0f} ns".format(event_begin) + " and ends at or around t {:.0f} ns".format(comp_event_end))# + " ns ( of {:+07.3f}".format(cut[i + bin_range] + " mV)"))
                     reconstructed = find_direction(coincidence_list, timestamp)
-                    if True:#reconstructed == True:
+                    if reconstructed == True:
                         make_histogram(time, coincidence_list, bin_range)
                         make_heatmap(time, coincidence_list)
                     chans_with_c_event = [] 
@@ -451,7 +451,7 @@ def find_direction(coincidence_list, timestamp):
                 mk_azimuth %= 360
 
             # Compares the minik angles to the antenna angles
-            if True:#azimuth >= mk_azimuth - 5 and azimuth <= mk_azimuth + 5:
+            if azimuth >= mk_azimuth - 15 and azimuth <= mk_azimuth + 15:
                 event_logger.info("        MiniK Zenith: {:5.2f}  degrees".format(mk_zenith))
                 event_logger.info("        MiniK Azimuth: {:5.2f}  degrees".format(mk_azimuth))
                 coincidence_logger.info("        MiniK Zenith: {:5.2f}  degrees".format(mk_zenith))

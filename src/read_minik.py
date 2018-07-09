@@ -4,7 +4,6 @@
 import logging
 
 
-in_file  = open("/home/reed/Desktop/rise/Antenna-Analysis/databases/Measurement_20180605/minik_20180605.txt", "r")
 
 # 34 columns come after the desired data
 # minik_columns = ["event_num", "timestamp", "???", "azimuth", "zenith", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34"]
@@ -44,8 +43,11 @@ minik_logger = setup_logger("minik_logger", "minik_log.txt", consol = True)
 #def read_event():
 #	return
 
+in_file  = open("/home/user/Desktop/rise/Antenna-Analysis/databases/Measurement_20180605/minik_20180605.txt", "r")
 
-def find_mk_event(ant_event_time):
+
+def find_mk_event(ant_timestamp):
+
 
 	# print("Searching MiniK data...")
 	# print(df)
@@ -60,12 +62,13 @@ def find_mk_event(ant_event_time):
 		if data_line[-1] == "\n":
 			data_line.pop(-1)
 			data_line += in_file.readline().split("\t")
-		
+
+		event_num = int(data_line[0])
 		timestamp = int(data_line[1])
-		if ant_event_time >= timestamp - 5 and ant_event_time <= timestamp + 5:
+		
+		if timestamp >= (ant_timestamp - 3) and timestamp <= (ant_timestamp + 3):
 			# print(data_line[3])
 			# print(data_line[4])
-			event_num = int(data_line[0])
 			azimuth = round(float(data_line[3]), 4)
 			zenith = round(float(data_line[4]), 4)
 			

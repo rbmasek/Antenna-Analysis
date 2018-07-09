@@ -4,6 +4,7 @@ import sys
 import operator
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 from numpy import array, sign, zeros
 from scipy.interpolate import interp1d
 from read_minik import *
@@ -17,16 +18,32 @@ X_MIN = -2000
 X_MAX = 100
 
 # Define directories
-directory = "/home/reed/Desktop/rise/Antenna-Analysis"
+directory = "/home/user/Desktop/rise/Antenna-Analysis"
 input_file  = directory + "/databases/Measurement_20180605/WaveDump_20180605_124246.db"
 
 # Define all plot objects
-plot_file = directory + "/analysis/radio.pdf"
-fig1 = plt.figure(figsize = (12, 6))
+plot_file = directory + "/analysis/"
+fig1 = plt.figure(figsize = (12, 10))
 plot1 = fig1.add_subplot(3, 1, 1)
 plot2 = fig1.add_subplot(3, 1, 2)
 plot3 = fig1.add_subplot(3, 1, 3)
 fig2 = plt.figure(figsize = (12, 10))
+fig3 = plt.figure(figsize = (12, 16))
+ax = Axes3D(fig3)
+
+# Antenna polar plot
+plot6 = plt.subplot(3, 1, 1, projection = 'polar')
+plot6.set_rmax(np.pi / 2)
+plot6.grid(True)
+# Minik polar plot
+plot7 = plt.subplot(3, 1, 2, projection = 'polar')
+plot7.set_rmax(np.pi / 2)
+plot7.grid(True)
+
+plot8 = plt.subplot(3, 1, 3)
+
+# plot9 = plt.subplot(4, 1, 4)
+
 plt.subplots_adjust(hspace = 1)
 cmap = plt.cm.get_cmap("gist_rainbow", NUMBER_OF_CHANNELS) # Automatically assigns a color to each channel
 
@@ -186,11 +203,11 @@ def find_signals(row, time, env_list, mean_list, bin_range, timestamp):
                     coincidence_logger.info("    Event " + str(row) + ":")
                     coincidence_logger.info("        Event Timestamp (sec): " + str(timestamp))
                     coincidence_logger.info("        A coinciding signal was detected in channels " + str(chans_with_c_event) + " and begins at or around t {:.0f} ns".format(event_begin) + " and ends at or around t {:.0f} ns".format(comp_event_end))# + " ns ( of {:+07.3f}".format(cut[i + bin_range] + " mV)"))
-                    if comp_event_begin >= -1000 and comp_event_end <= 0:
+                    if comp_event_begin >= -1500 and comp_event_end <= 0:
                         cosmic_ray_logger.info("    Event " + str(row) + ":")
                         cosmic_ray_logger.info("        Event Timestamp (sec): " + str(timestamp))
                         cosmic_ray_logger.info("        A coinciding signal was detected in channels " + str(chans_with_c_event) + " and begins at or around t {:.0f} ns".format(event_begin) + " and ends at or around t {:.0f} ns".format(comp_event_end))# + " ns ( of {:+07.3f}".format(cut[i + bin_range] + " mV)"))
-                    reconstructed = find_direction(coincidence_list, timestamp)
+                    reconstructed = find_direction(coincidence_list, row, timestamp)
                     if reconstructed == True:
                         make_histogram(time, coincidence_list, bin_range)
                         make_heatmap(time, coincidence_list)
@@ -214,11 +231,11 @@ def find_signals(row, time, env_list, mean_list, bin_range, timestamp):
                         coincidence_logger.info("    Event " + str(row) + ":")
                         coincidence_logger.info("        Event Timestamp (sec): " + str(timestamp))
                         coincidence_logger.info("        A coinciding signal was detected in channels " + str(chans_with_c_event) + " and begins at or around t {:.0f} ns".format(event_begin) + " and ends at or around t {:.0f} ns".format(comp_event_end))# + " ns ( of {:+07.3f}".format(cut[i + bin_range] + " mV)"))
-                        if comp_event_begin >= -1000 and comp_event_end <= 0:
+                        if comp_event_begin >= -1500 and comp_event_end <= 0:
                             cosmic_ray_logger.info("    Event " + str(row) + ":")
                             cosmic_ray_logger.info("        Event Timestamp (sec): " + str(timestamp))
                             cosmic_ray_logger.info("        A coinciding signal was detected in channels " + str(chans_with_c_event) + " and begins at or around t {:.0f} ns".format(event_begin) + " and ends at or around t {:.0f} ns".format(comp_event_end))# + " ns ( of {:+07.3f}".format(cut[i + bin_range] + " mV)"))
-                        reconstructed = find_direction(coincidence_list, timestamp)
+                        reconstructed = find_direction(coincidence_list, row, timestamp)
                         if reconstructed == True:
                             make_histogram(time, coincidence_list, bin_range)
                             make_heatmap(time, coincidence_list)
@@ -230,11 +247,11 @@ def find_signals(row, time, env_list, mean_list, bin_range, timestamp):
                     coincidence_logger.info("    Event " + str(row) + ":")
                     coincidence_logger.info("        Event Timestamp (sec): " + str(timestamp))
                     coincidence_logger.info("        A coinciding signal was detected in channels " + str(chans_with_c_event) + " and begins at or around t {:.0f} ns".format(event_begin) + " and ends at or around t {:.0f} ns".format(comp_event_end))# + " ns ( of {:+07.3f}".format(cut[i + bin_range] + " mV)"))
-                    if comp_event_begin >= -1000 and comp_event_end <= 0:
+                    if comp_event_begin >= -1500 and comp_event_end <= 0:
                         cosmic_ray_logger.info("    Event " + str(row) + ":")
                         cosmic_ray_logger.info("        Event Timestamp (sec): " + str(timestamp))
                         cosmic_ray_logger.info("        A coinciding signal was detected in channels " + str(chans_with_c_event) + " and begins at or around t {:.0f} ns".format(event_begin) + " and ends at or around t {:.0f} ns".format(comp_event_end))# + " ns ( of {:+07.3f}".format(cut[i + bin_range] + " mV)"))
-                    reconstructed = find_direction(coincidence_list, timestamp)
+                    reconstructed = find_direction(coincidence_list, row, timestamp)
                     if reconstructed == True:
                         make_histogram(time, coincidence_list, bin_range)
                         make_heatmap(time, coincidence_list)
@@ -309,6 +326,7 @@ def make_histogram(time, coincidence_list, bin_range):
             for b in range(0, bin_range):
                 if (event_index + b) < len(time) - 1:
                     histo_list[chan_num][event_index + b] += 1
+
     for chan_num in range(0, NUMBER_OF_CHANNELS): 
         plot4 = fig2.add_subplot(NUMBER_OF_CHANNELS, 2, chan_num * 2 + 1)
         plot4.clear()
@@ -317,7 +335,7 @@ def make_histogram(time, coincidence_list, bin_range):
         plot4.plot(time, histo_list[chan_num][:], label = "ch" + str(chan_num) + " histo", color = col)
         plot4.fill_between(time[:], histo_list[chan_num][:], y2 = 0, color = col)
         plot4.set_xlabel("Time (ns)")
-        plot4.set_ylabel("Event Counts (Bin = " + str(bin_range) + " ns)")
+        plot4.set_ylabel("Event Counts ") # (Bin = " + str(bin_range) + " ns)
         plot4.set_title("Channel " + str(chan_num) + " Histogram")
         plot4.set_xlim(time[0], time[len(time) - 1])
         plot4.set_ylim(0, np.max(histo_list) + 1)
@@ -353,18 +371,108 @@ def make_heatmap(time, coincidence_list):
         heat_sum = np.sum(heat_list[chan_num][:])
         if heat_sum == 0:
             heat_sum = 1
-                
+            
         plot5.plot(time, heat_list[chan_num][:] / heat_sum, label = "ch" + str(chan_num) + " heatmap", color = col)
         plot5.fill_between(time[:], heat_list[chan_num][:] / heat_sum * 100, y2 = 0, color = col)
         plot5.set_xlabel("Time (ns)")
-        plot5.set_ylabel("Relative Frequency (% of total)")
+        plot5.set_ylabel("% of total") # Relative frequency
         plot5.set_title("Channel " + str(chan_num) + " Heatmap")
         plot5.set_xlim(time[0], time[len(time) - 1])
         plot5.set_ylim(0, (heat_max / heat_sum * 100) * 1.1)
         plot5.grid(1)
-                 
+
+
+def make_polarmap(a_azimuth, a_zenith, m_azimuth, m_zenith):
+
+    # Creates heat_list if this is the first iteration of the program
+    if "m_zenith_max" not in globals():
+        global m_zenith_max
+        global a_azimuths
+        global a_zeniths
+        global m_azimuths
+        global m_zeniths
+        global a_z
+        global m_z
+        global a_r
+        global a_th
+        global m_r
+        global m_th
+
+        m_zenith_max = 0
+        a_azimuths = np.radians(np.linspace(0, 360, 361))
+        a_zeniths = np.arange(0, 91, step = 1)
+        m_azimuths = np.radians(np.linspace(0, 360, 361))
+        m_zeniths = np.arange(0, 0.91, step = 0.01)
+
+        a_z = np.zeros((a_azimuths.size, a_zeniths.size))
+        m_z = np.zeros((m_azimuths.size, m_zeniths.size))
+        a_r, a_th = np.meshgrid(a_zeniths, a_azimuths)
+        m_r, m_th = np.meshgrid(m_zeniths, m_azimuths)
+
+    a_z[int(np.floor(a_azimuth)), int(np.floor(a_zenith))] += 1
+    a_z[int(np.floor(a_azimuth)) + 1, int(np.floor(a_zenith))] += 1
+    a_z[int(np.floor(a_azimuth)) - 1, int(np.floor(a_zenith))] += 1
+    a_z[int(np.floor(a_azimuth)), int(np.floor(a_zenith)) + 1] += 1
+    a_z[int(np.floor(a_azimuth)), int(np.floor(a_zenith)) - 1] += 1
+
+    m_z[int(np.floor(m_azimuth)), int(np.floor(m_zenith * 100))] += 1
+    m_z[int(np.floor(m_azimuth)) + 1, int(np.floor(m_zenith * 100))] += 1
+    m_z[int(np.floor(m_azimuth)) - 1, int(np.floor(m_zenith * 100))] += 1
+    m_z[int(np.floor(m_azimuth)), int(np.floor(m_zenith * 100)) + 1] += 1
+    m_z[int(np.floor(m_azimuth)), int(np.floor(m_zenith * 100)) - 1] += 1
+
+    if m_zenith > m_zenith_max:
+        m_zenith_max = m_zenith * 1.1
+
+    plot6.pcolormesh(a_th, a_r, a_z)
+    plot6.plot(a_azimuths, a_r, c = 'k', ls = 'none') 
+    plot6.set_title('Antenna Polar Scatterplot\n')
+    plot6.grid(1)    
+
+    plot7.pcolormesh(m_th, m_r, m_z)    
+    plot7.plot(m_azimuths, m_r, c = 'k', ls = 'none')
+    plot7.set_rmax(m_zenith_max) 
+    plot7.set_title('MiniK Polar Scatterplot\n')
+    plot7.grid(1)
+
+
+def make_diffplot(a_azimuth, minik_azimuth):
+
+    if "angle_diff_list" not in globals():
+        global angle_diff_list
+        angle_diff_list = []
+
+    angle_diff = int(np.floor(np.abs(a_azimuth - minik_azimuth)))
+    print(angle_diff)
+    angle_diff_list.append(angle_diff)
+
+    plot8.hist(angle_diff_list, bins = range(min(angle_diff_list), max(angle_diff_list) + 5, 5), color = "green")
+    plot8.set_xlabel("Azimuth Difference (degrees)")
+    plot8.set_ylabel("Counts")
+    plot8.set_title("Difference Between Antenna and MiniK Azimuths")
+    plot8.grid(1)
+
+               
+def make_time_plot(a_time, m_time):
+
+    if "time_diff_list" not in globals():
+        global time_diff_list
+        time_diff_list = []
+
+    time_diff = int(np.floor(np.abs(a_time - m_time)))
+    print(time_diff)
+    time_diff_list.append(time_diff)
+    print(len(time_diff_list))
+
+    plot9.hist(time_diff_list, bins = range(min(time_diff_list), max(time_diff_list) + 2, 1), color = "orange")
+    plot9.set_xlabel("Time difference (s)")
+    plot9.set_ylabel("Counts")
+    plot9.set_title("Difference between Antenna and MiniK Timestamps")
+    plot9.grid(1)
+
+
 # Method derived from arXiv:1702.04902
-def find_direction(coincidence_list, timestamp):
+def find_direction(coincidence_list, event_num, timestamp):
     time_list = [] # Stores the signal begin times where the index corresponds to the channel number
     event_list = [] # Stores the event by channel number (event_list[0] corresponds to ch0)
     new_coincidence_list = []
@@ -395,8 +503,7 @@ def find_direction(coincidence_list, timestamp):
     D_z = D[2]
 
     A_tilde = np.zeros((3,3))
-    xy_sqrt = np.sqrt( np.square(D_x) + np.square(D_y) )
-
+    xy_sqrt = np.sqrt(np.square(D_x) + np.square(D_y))
     A_tilde[0][0] = (D_x * D_z) / xy_sqrt
     A_tilde[0][1] = (D_y * D_z) / xy_sqrt
     A_tilde[0][2] = np.negative( xy_sqrt )
@@ -413,12 +520,11 @@ def find_direction(coincidence_list, timestamp):
     d_x_prime = SPEED_OF_LIGHT * ( ( (time_list[0] - time_list[2]) * (r_prime[1][1] - r_prime[0][1]) ) - ( (time_list[0] - time_list[1]) * (r_prime[2][1] - r_prime[0][1]) ) ) / ( ( (r_prime[2][0] - r_prime[0][0]) * (r_prime[1][1] - r_prime[0][1]) ) - ( (r_prime[1][0] - r_prime[0][0]) * (r_prime[2][1] - r_prime[0][1]) ) ) 
     d_y_prime = SPEED_OF_LIGHT * ( ( (time_list[0] - time_list[1]) * (r_prime[2][0] - r_prime[0][0]) ) - ( (time_list[0] - time_list[2]) * (r_prime[1][0] - r_prime[0][0]) ) ) / ( ( (r_prime[2][0] - r_prime[0][0]) * (r_prime[1][1] - r_prime[0][1]) ) - ( (r_prime[1][0] - r_prime[0][0]) * (r_prime[2][1] - r_prime[0][1]) ) ) 
     d_z_prime = np.sqrt( 1 - np.square(d_x_prime) - np.square(d_y_prime) )
-
+        
     #d_prime is a unit vector
     d_prime = np.array((d_x_prime, d_y_prime, d_z_prime))
 
     if np.linalg.norm(d_prime) >= 0.999 and np.linalg.norm(d_prime) < 1.0001:
-        reconstructed = True
         
         # d is a unit vector
         d = (np.linalg.inv(A_tilde)).dot(d_prime)
@@ -426,23 +532,20 @@ def find_direction(coincidence_list, timestamp):
         zenith = np.arccos(d[2]) * 57.2958
         azimuth = np.arccos(d[0] / np.sin(zenith)) * 57.2958
 
-        event_logger.info("        Antenna Zenith: {:5.2f}  degrees".format(zenith))
-        event_logger.info("        Antenna Azimuth: {:5.2f}  degrees".format(azimuth))
+        if not np.isnan(azimuth):
+            reconstructed = True
 
-        coincidence_logger.info("        Antenna Zenith: {:5.2f}  degrees".format(zenith))
-        coincidence_logger.info("        Antenna Azimuth: {:5.2f}  degrees".format(azimuth))
+            event_logger.info("        Antenna Zenith: {:5.2f}  degrees".format(zenith))
+            event_logger.info("        Antenna Azimuth: {:5.2f}  degrees".format(azimuth))
 
-        # Checks that the event falls within the time range in which cosmic ray events would be found
-        if new_coincidence_list[0][1] >= -1000 and new_coincidence_list[0][2] <= 0:
-            cosmic_ray_logger.info("        Antenna Zenith: {:5.2f}  degrees".format(zenith))
-            cosmic_ray_logger.info("        Antenna Azimuth: {:5.2f}  degrees".format(azimuth))
+            coincidence_logger.info("        Antenna Zenith: {:5.2f}  degrees".format(zenith))
+            coincidence_logger.info("        Antenna Azimuth: {:5.2f}  degrees".format(azimuth))            
 
-            # MikiK data is not always structured properly. This prevents errors from being processed.
             try:
                 mk_event_num, mk_timestamp, mk_azimuth, mk_zenith = find_mk_event(timestamp)
 
             except Exception as e:
-                cosmic_ray_logger.warning("        Error when reading MiniK data: " + str(e) + ". Skipping...")
+                # cosmic_ray_logger.warning("        Error when reading MiniK data: " + str(e) + ". Skipping..."
                 return
 
             # Convert mk_azimuth so that it is with respect to North
@@ -451,13 +554,22 @@ def find_direction(coincidence_list, timestamp):
                 mk_azimuth %= 360
 
             # Compares the minik angles to the antenna angles
-            if azimuth >= mk_azimuth - 15 and azimuth <= mk_azimuth + 15:
+            if True:#azimuth >= mk_azimuth - 15 and azimuth <= mk_azimuth + 15:
                 event_logger.info("        MiniK Zenith: {:5.2f}  degrees".format(mk_zenith))
                 event_logger.info("        MiniK Azimuth: {:5.2f}  degrees".format(mk_azimuth))
                 coincidence_logger.info("        MiniK Zenith: {:5.2f}  degrees".format(mk_zenith))
                 coincidence_logger.info("        MiniK Azimuth: {:5.2f}  degrees".format(mk_azimuth))
-                cosmic_ray_logger.info("        MiniK Zenith: {:5.2f}  degrees".format(mk_zenith))
-                cosmic_ray_logger.info("        MiniK Azimuth: {:5.2f}  degrees".format(mk_azimuth))
+
+                # Checks that the event falls within the time range in which cosmic ray events would be found
+                if new_coincidence_list[0][1] >= -2000 and new_coincidence_list[0][2] <= 0:
+                    cosmic_ray_logger.info("        Antenna Zenith: {:5.2f}  degrees".format(zenith))
+                    cosmic_ray_logger.info("        Antenna Azimuth: {:5.2f}  degrees".format(azimuth))
+
+                    cosmic_ray_logger.info("        MiniK Zenith: {:5.2f}  degrees".format(mk_zenith))
+                    cosmic_ray_logger.info("        MiniK Azimuth: {:5.2f}  degrees".format(mk_azimuth))
+
+            make_polarmap(azimuth , zenith , mk_azimuth , mk_zenith )
+            make_diffplot(azimuth, mk_azimuth)
 
     return reconstructed
 

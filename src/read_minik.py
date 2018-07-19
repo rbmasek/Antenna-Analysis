@@ -2,7 +2,7 @@
 
 #import pandas as pd
 import logging
-
+import numpy as np
 
 
 # 34 columns come after the desired data
@@ -43,11 +43,10 @@ minik_logger = setup_logger("minik_logger", "minik_log.txt", consol = True)
 #def read_event():
 #	return
 
-in_file  = open("/home/user/Desktop/rise/Antenna-Analysis/databases/Measurement_20180605/minik_20180605.txt", "r")
+in_file  = open("/home/user/Desktop/rise/Antenna-Analysis/databases/Measurement_20180710/minik_20180710.txt", "r")
 
 
 def find_mk_event(ant_timestamp):
-
 
 	# print("Searching MiniK data...")
 	# print(df)
@@ -58,6 +57,7 @@ def find_mk_event(ant_timestamp):
 
 	for line in in_file:
 		data_line = line.split("\t")#.strip("\n").strip("\t")
+		# print(data_line)
 		
 		if data_line[-1] == "\n":
 			data_line.pop(-1)
@@ -66,16 +66,21 @@ def find_mk_event(ant_timestamp):
 		event_num = int(data_line[0])
 		timestamp = int(data_line[1])
 		
-		if timestamp >= (ant_timestamp - 3) and timestamp <= (ant_timestamp + 3):
-			# print(data_line[3])
-			# print(data_line[4])
-			azimuth = round(float(data_line[3]), 4)
-			zenith = round(float(data_line[4]), 4)
+		if timestamp >= (ant_timestamp - 5) and timestamp <= (ant_timestamp + 5):
+			azimuth = float(data_line[3])
+			zenith = float(data_line[4])
+			if not np.isnan(azimuth) and not np.isnan(zenith):
+				print(data_line[3])
+				print(data_line[4])
+				azimuth = round(azimuth, 4)
+				zenith = round(zenith * (180 / np.pi), 4)	 # Converts the mk_zenith from radians to degrees
 			
-			return event_num, timestamp, azimuth, zenith
+				return event_num, timestamp, azimuth, zenith
 			#minik_logger.info("    Shared Event:")
 			#minik_logger.info("        Antenna:\tEvent " + str(ant_event_num) + "\tTime: "str(time) + " ns")
 			#minik_logger.info("        MiniK:\tEvent " + str(event_num) + "\tTime: "str(timestamp) + " ns")
+		elif timestamp > (ant_timestamp + 5):
+			return 0, 0, 0, 0
 
 '''
 if __name__  == "__main__":

@@ -112,14 +112,19 @@ def search_events(args):
         #event_logger.info("dcOffsetCh2: " + str(dcOffsetCH2))
         dcOffsetCH3 = rowDCOffsets[3]['offset']
         dcOffsetCH3 = int((2**(14) - 1) * (dcOffsetCH3 / 65536.0))
-        '''
         #event_logger.info("dcOffsetCh3: " + str(dcOffsetCH3))
         dcOffsetCH4 = rowDCOffsets[4]['offset']
         dcOffsetCH4 = int((2**(14) - 1) * (dcOffsetCH4 / 65536.0))
 
         dcOffsetCH5 = rowDCOffsets[5]['offset']
         dcOffsetCH5 = int((2**(14) - 1) * (dcOffsetCH5 / 65536.0))
-        '''
+
+        dcOffsetCH6 = rowDCOffsets[6]['offset']
+        dcOffsetCH6 = int((2**(14) - 1) * (dcOffsetCH6 / 65536.0))
+
+        dcOffsetCH7 = rowDCOffsets[7]['offset']
+        dcOffsetCH7 = int((2**(14) - 1) * (dcOffsetCH7 / 65536.0))
+
         event_logger.info("    Event Timestamp (sec): " + str(event_timestamp))
         # event_logger.info("Event timestamp (UTC): " + time.strftime("%a, %d %b %Y %H:%M:%S", time.gmtime(event_timestamp)))
 
@@ -136,33 +141,34 @@ def search_events(args):
         adcValuesCh1 = c.fetchone()[0]
         adcValuesCh2 = c.fetchone()[0]
         adcValuesCh3 = c.fetchone()[0]
-        '''
         adcValuesCh4 = c.fetchone()[0]
         adcValuesCh5 = c.fetchone()[0]
-        '''
+        adcValuesCh6 = c.fetchone()[0]
+        adcValuesCh7 = c.fetchone()[0]
+
         adcValuesCh0 = adcValuesCh0.split()
-        adcValuesCh0 = [convertCh0((float(i) - dcOffsetCH0))
-                        for i in adcValuesCh0]
+        adcValuesCh0 = [convertCh0((float(i) - dcOffsetCH0)) for i in adcValuesCh0]
 
         adcValuesCh1 = adcValuesCh1.split()
-        adcValuesCh1 = [convertCh1((float(i) - dcOffsetCH1))
-                        for i in adcValuesCh1]
+        adcValuesCh1 = [convertCh1((float(i) - dcOffsetCH1)) for i in adcValuesCh1]
 
         adcValuesCh2 = adcValuesCh2.split()
-        adcValuesCh2 = [convertCh2((float(i) - dcOffsetCH2))
-                        for i in adcValuesCh2]
+        adcValuesCh2 = [convertCh2((float(i) - dcOffsetCH2)) for i in adcValuesCh2]
 
         adcValuesCh3 = adcValuesCh3.split()
-        adcValuesCh3 = [convertCh3((float(i) - dcOffsetCH3))
-                        for i in adcValuesCh3]
+        adcValuesCh3 = [convertCh3((float(i) - dcOffsetCH3)) for i in adcValuesCh3]
 
-        '''
         adcValuesCh4 = adcValuesCh4.split()
         adcValuesCh4 = [convertCh4((float(i) - dcOffsetCH4)) for i in adcValuesCh4]
 
         adcValuesCh5 = adcValuesCh5.split()
         adcValuesCh5 = [convertCh5((float(i) - dcOffsetCH5)) for i in adcValuesCh5]
-        '''
+
+        adcValuesCh6 = adcValuesCh6.split()
+        adcValuesCh6 = [convertCh6((float(i) - dcOffsetCH6)) for i in adcValuesCh6]
+
+        adcValuesCh7 = adcValuesCh7.split()
+        adcValuesCh7 = [convertCh7((float(i) - dcOffsetCH7)) for i in adcValuesCh7]
 
         exp = np.log(len(adcValuesCh1)) / np.log(2)
         expDif = len(adcValuesCh1) - 2 ** int(exp)
@@ -171,10 +177,11 @@ def search_events(args):
             adcValuesCh1 = adcValuesCh1[int(expDif / 2):-int(expDif / 2)]
             adcValuesCh2 = adcValuesCh2[int(expDif / 2):-int(expDif / 2)]
             adcValuesCh3 = adcValuesCh3[int(expDif / 2):-int(expDif / 2)]
-            '''
-            adcValuesCh4 = adcValuesCh4[int(expDif/2):-int(expDif/2)]
-            adcValuesCh5 = adcValuesCh5[int(expDif/2):-int(expDif/2)]
-            '''
+            adcValuesCh4 = adcValuesCh4[int(expDif / 2):-int(expDif / 2)]
+            adcValuesCh5 = adcValuesCh5[int(expDif / 2):-int(expDif / 2)]
+            adcValuesCh6 = adcValuesCh6[int(expDif / 2):-int(expDif / 2)]
+            adcValuesCh7 = adcValuesCh7[int(expDif / 2):-int(expDif / 2)]
+
             time = time[int(expDif / 2):-int(expDif / 2)]
 
         else:
@@ -182,10 +189,11 @@ def search_events(args):
             adcValuesCh1 = adcValuesCh1[int(expDif / 2) - 1:-int(expDif / 2)]
             adcValuesCh2 = adcValuesCh2[int(expDif / 2) - 1:-int(expDif / 2)]
             adcValuesCh3 = adcValuesCh3[int(expDif / 2) - 1:-int(expDif / 2)]
-            '''
-            adcValuesCh4 = adcValuesCh4[int(expDif/2)-1:-int(expDif/2)]
-            adcValuesCh5 = adcValuesCh5[int(expDif/2)-1:-int(expDif/2)]
-            '''
+            adcValuesCh4 = adcValuesCh4[int(expDif / 2) - 1:-int(expDif / 2)]
+            adcValuesCh5 = adcValuesCh5[int(expDif / 2) - 1:-int(expDif / 2)]
+            adcValuesCh6 = adcValuesCh6[int(expDif / 2) - 1:-int(expDif / 2)]
+            adcValuesCh7 = adcValuesCh7[int(expDif / 2) - 1:-int(expDif / 2)]
+
             time = time[int(expDif / 2) - 1:-int(expDif / 2)]
 
         # event_logger.info(len(adcValuesCh0))
@@ -195,18 +203,19 @@ def search_events(args):
         ch1Fourier = np.complex()
         ch2Fourier = np.complex()
         ch3Fourier = np.complex()
-        '''
         ch4Fourier = np.complex()
         ch5Fourier = np.complex()
-        '''
+        ch6Fourier = np.complex()
+        ch7Fourier = np.complex()
+
         ch0Fourier = sfft.fft(adcValuesCh0, len(adcValuesCh0))
         ch1Fourier = sfft.fft(adcValuesCh1, len(adcValuesCh1))
         ch2Fourier = sfft.fft(adcValuesCh2, len(adcValuesCh2))
         ch3Fourier = sfft.fft(adcValuesCh3, len(adcValuesCh3))
-        '''
-        ch4Fourier = sfft.fft(adcValuesCh3, len(adcValuesCh3))
-        ch5Fourier = sfft.fft(adcValuesCh3, len(adcValuesCh3))
-        '''
+        ch4Fourier = sfft.fft(adcValuesCh4, len(adcValuesCh4))
+        ch5Fourier = sfft.fft(adcValuesCh5, len(adcValuesCh5))
+        ch6Fourier = sfft.fft(adcValuesCh6, len(adcValuesCh6))
+        ch7Fourier = sfft.fft(adcValuesCh7, len(adcValuesCh7))
 
         freq = sfft.fftfreq(len(adcValuesCh3), samplingStepTime)
         for i in range(len(freq)):
@@ -216,34 +225,34 @@ def search_events(args):
         ch1FourierCut = np.complex()
         ch2FourierCut = np.complex()
         ch3FourierCut = np.complex()
-        '''
         ch4FourierCut = np.complex()
         ch5FourierCut = np.complex()
-        '''
+        ch6FourierCut = np.complex()
+        ch7FourierCut = np.complex()
+
         ch0FourierCut = fourierCut(ch0Fourier, freq)
         ch1FourierCut = fourierCut(ch1Fourier, freq)
         ch2FourierCut = fourierCut(ch2Fourier, freq)
         ch3FourierCut = fourierCut(ch3Fourier, freq)
-        '''
         ch4FourierCut = fourierCut(ch4Fourier, freq)
         ch5FourierCut = fourierCut(ch5Fourier, freq)
-        '''
+        ch6FourierCut = fourierCut(ch6Fourier, freq)
+        ch7FourierCut = fourierCut(ch7Fourier, freq)
+
         adcValuesCh0Cut = sfft.ifft(ch0FourierCut, len(ch0FourierCut))
         adcValuesCh1Cut = sfft.ifft(ch1FourierCut, len(ch1FourierCut))
         adcValuesCh2Cut = sfft.ifft(ch2FourierCut, len(ch2FourierCut))
         adcValuesCh3Cut = sfft.ifft(ch3FourierCut, len(ch3FourierCut))
-        '''
         adcValuesCh4Cut = sfft.ifft(ch4FourierCut, len(ch4FourierCut))
         adcValuesCh5Cut = sfft.ifft(ch5FourierCut, len(ch5FourierCut))
-        '''
+        adcValuesCh6Cut = sfft.ifft(ch6FourierCut, len(ch6FourierCut))
+        adcValuesCh7Cut = sfft.ifft(ch7FourierCut, len(ch7FourierCut))
 
         # , adcValuesCh4Cut[x_min_index : x_max_index], adcValuesCh5Cut[x_min_index : x_max_index]] #Stores each channel in a list so that the commands can be iterated instead of hard coded.
-        cut_list = [adcValuesCh0Cut, adcValuesCh1Cut,
-                    adcValuesCh2Cut, adcValuesCh3Cut]
+        cut_list = [adcValuesCh0Cut, adcValuesCh1Cut, adcValuesCh2Cut, adcValuesCh3Cut, adcValuesCh4Cut, adcValuesCh5Cut, adcValuesCh6Cut, adcValuesCh7Cut]
 
         coincidence = False  # Reset boolean each iteration
-        coincidence = analyze_channels(
-            row, time, cut_list, args.BIN_RANGE, event_timestamp)
+        coincidence = analyze_channels(row, time, cut_list, args.BIN_RANGE, event_timestamp)
 
         '''
         try:
@@ -260,14 +269,20 @@ def search_events(args):
 
         if coincidence == True:
 
-            plot1.plot(time, adcValuesCh0, label="CH0", color='blue')
-            plot1.plot(time, adcValuesCh1, label="CH1", color='red')
-            plot1.plot(time, adcValuesCh2, label="CH2", color='green')
-            plot1.plot(time, adcValuesCh3, label="CH3", color='orange')
+            plot1.plot(time, adcValuesCh0, label="CH0", color=cmap(0))
+            plot1.plot(time, adcValuesCh1, label="CH1", color=cmap(1))
+            plot1.plot(time, adcValuesCh2, label="CH2", color=cmap(2))
+            plot1.plot(time, adcValuesCh3, label="CH3", color=cmap(3))
+            plot1.plot(time, adcValuesCh4, label="CH4", color=cmap(4))
+            plot1.plot(time, adcValuesCh5, label="CH5", color=cmap(5))
+            plot1.plot(time, adcValuesCh6, label="CH6", color=cmap(6))
+            plot1.plot(time, adcValuesCh7, label="CH7", color=cmap(7))
+
             plot1.set_xlabel("Time (ns)")
             plot1.set_ylabel("Amplitude (mV)")
             plot1.set_title("Recorded waveforms")
             plot1.set_xlim(X_MIN, X_MAX)
+            plot1.legend()
             plot1.grid(1)
 
             plot2.plot(freq[1:int(len(ch0Fourier) / 2)], 20 * np.log10(abs(ch0Fourier)[1:int(len(ch0Fourier) / 2)]),
@@ -287,12 +302,15 @@ def search_events(args):
             plot2.legend()
             plot2.grid(1)
 
-            plot3.plot(time, adcValuesCh0Cut, label="ch0Cut", color='blue')
-            plot3.plot(time, adcValuesCh1Cut, label="ch1Cut", color='red')
-            plot3.plot(time, adcValuesCh2Cut, label="ch2Cut", color='green')
-            plot3.plot(time, adcValuesCh3Cut, label="ch3Cut", color='orange')
-            #plot3.plot(time, adcValuesCh4Cut, label = "ch4Cut", color = 'brown')
-            #plot3.plot(time, adcValuesCh5Cut, label = "ch5Cut", color = 'purple')
+            plot3.plot(time, adcValuesCh0Cut, label="ch0Cut", color=cmap(0))
+            plot3.plot(time, adcValuesCh1Cut, label="ch1Cut", color=cmap(1))
+            plot3.plot(time, adcValuesCh2Cut, label="ch2Cut", color=cmap(2))
+            plot3.plot(time, adcValuesCh3Cut, label="ch3Cut", color=cmap(3))
+            plot3.plot(time, adcValuesCh4Cut, label="ch4Cut", color=cmap(4))
+            plot3.plot(time, adcValuesCh5Cut, label="ch5Cut", color=cmap(5))
+            plot3.plot(time, adcValuesCh6Cut, label="ch6Cut", color=cmap(6))
+            plot3.plot(time, adcValuesCh7Cut, label="ch7Cut", color=cmap(7))
+
             plot3.set_xlabel("Time (ns)")
             plot3.set_ylabel("Amplitude (mV)")
             plot3.set_title("Waveforms with frequency cuts")
@@ -320,8 +338,7 @@ if __name__ == "__main__":
 
     try:
         # Define some constants
-        parser = argparse.ArgumentParser(
-            description="Define constants for the minimum event number, the maximum event number, and the bin range.")
+        parser = argparse.ArgumentParser(description="Define constants for the minimum event number, the maximum event number, and the bin range.")
         parser.add_argument("-min", type=int, dest="SEARCH_MIN", default=0,
                             help="integer value for the minimum event number")
         parser.add_argument("-max", type=int, dest="SEARCH_MAX", default=len(rowEvents),
@@ -382,6 +399,7 @@ if __name__ == "__main__":
         fig1.canvas.draw()
         fig2.canvas.draw()
         fig3.canvas.draw()
+        fig1.savefig(plot_file + "waveforms.pdf", bbox_inches='tight')
         fig2.savefig(plot_file + "histo.pdf", bbox_inches='tight')
         fig3.savefig(plot_file + "polar.pdf", bbox_inches='tight')
 
@@ -416,6 +434,7 @@ if __name__ == "__main__":
         fig1.canvas.draw()
         fig2.canvas.draw()
         fig3.canvas.draw()
+        fig1.savefig(plot_file + "waveforms.pdf", bbox_inches='tight')
         fig2.savefig(plot_file + "histo.pdf", bbox_inches='tight')
         fig3.savefig(plot_file + "polar.pdf", bbox_inches='tight')
 
@@ -453,8 +472,9 @@ if __name__ == "__main__":
         fig1.canvas.draw()
         fig2.canvas.draw()
         fig3.canvas.draw()
+        fig1.savefig(plot_file + "waveforms.pdf", bbox_inches='tight')
         fig2.savefig(plot_file + "histo.pdf", bbox_inches='tight')
-        #fig3.savefig(plot_file + "polar.pdf", bbox_inches='tight')
+        fig3.savefig(plot_file + "polar.pdf", bbox_inches='tight')
 
         event_logger.info("Figures saved to \"" + plot_file + "\"\n")
         event_logger.info(
